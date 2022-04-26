@@ -1,0 +1,3 @@
+C:/Users/luann/CLionProjects/IAS/cmake-build-debug/CMakeFiles/IAS.dir
+C:/Users/luann/CLionProjects/IAS/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/luann/CLionProjects/IAS/cmake-build-debug/CMakeFiles/rebuild_cache.dir
