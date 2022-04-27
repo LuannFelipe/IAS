@@ -283,22 +283,32 @@ void executa()
 
 void lerTexto()
 {
-    FILE *ptr;
+    FILE *arq;
+    char *pl;
     char str[50];
-    ptr = fopen("programa.txt", "r");
+    int count = 0;
+    arq = fopen("programa.txt", "r");
 
-    if (NULL == ptr) {
-        printf("file can't be opened \n");
-        return;
+    if (NULL == arq) {
+        printf("Arquivo programa.txt nao encontrado \n");
+        exit(1);
+    } else{
+
+       while (fgets(str, 50, arq) != NULL) {
+           pl = strtok(str, ";");
+           while(count < 3)
+           {
+               printf("token:%s\n",pl);
+               pl = strtok(NULL,";");
+               count++;
+           }
+           count = 0;
+           printf("\n");
+        }
     }
 
-    printf("content of this file are \n");
 
-    while (fgets(str, 50, ptr) != NULL) {
-        printf("%s", str);
-    }
-
-    fclose(ptr);
+    fclose(arq);
 
 }
 
