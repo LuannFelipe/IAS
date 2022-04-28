@@ -1,0 +1,3 @@
+"C:\Program Files\JetBrains\CLion 2021.3.4\bin\cmake\win\bin\cmake.exe" -E rm -f CMakeFiles\IAS.dir/objects.a
+C:\PROGRA~1\JETBRA~1\CLION2~1.4\bin\mingw\bin\ar.exe qc CMakeFiles\IAS.dir/objects.a @CMakeFiles\IAS.dir\objects1.rsp
+C:\PROGRA~1\JETBRA~1\CLION2~1.4\bin\mingw\bin\gcc.exe -g -Wl,--whole-archive CMakeFiles\IAS.dir/objects.a -Wl,--no-whole-archive -o IAS.exe -Wl,--out-implib,libIAS.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\IAS.dir\linklibs.rsp
