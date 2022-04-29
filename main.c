@@ -293,11 +293,22 @@ void executa()
     }
 }
 
+
+int criar_palavra(char mnemonico[], unsigned int reg1, unsigned int reg2, unsigned int menOuImm)
+{
+    int novaPalavra;
+
+
+
+    return novaPalavra;
+}
+
 void lerTexto()
 {
     FILE *arq;
     char *pl;
     char str[50];
+    char mnemonico[10];
     int count = 0;
 
     int inicio;
@@ -319,38 +330,107 @@ void lerTexto()
            pl = strtok(str, ";");
            while(count < 3)
            {
-               printf("token:%s\n",pl);
                if(count == 0)
                {
                    //inicio
                    inicio = (int) strtol(pl,NULL,16);
-                   printf("%d --- %x\n",inicio,inicio);
                } else if(count == 1)
                {
                    //tipo
                    tipo = *pl;
-                   printf("%c\n",tipo);
                } else{
                    if(tipo == 'i')
                    {
-                       pl = strtok(pl, "r, ");
-                       //palavra
-                       if(strcmp(pl,"nop") == 0)
-                       {
-                           opcode = 0x01;
-                       } else if(strcmp(pl,"ld") == 0)
-                       {
-                           opcode = 0x13;
-                           pl = strtok(NULL,"r, ");
-                           reg1 = (int) strtol(pl,NULL, 16);
-                           pl = strtok(NULL,"r, ");
-                           menOuImm = (int) strtol(pl,NULL, 16);
-                       }
-                       return;
+                       pl = strtok(pl,", ");
+                      if(strcmp(pl, "add") == 0 || strcmp(pl, "sub") == 0 ||
+                            strcmp(pl, "mul") == 0 || strcmp(pl, "div") == 0 ||
+                            strcmp(pl, "cmp") == 0 || strcmp(pl, "movrr") == 0 ||
+                            strcmp(pl, "and") == 0 || strcmp(pl, "or") == 0 ||
+                            strcmp(pl, "xor") == 0)
+                      {
+                          //Mnemônico
+                          strcpy(mnemonico,pl);
+                          //ro1
+                          pl = strtok(NULL,"r, ");
+                          reg1 = (int) strtol(pl, NULL, 16);
+                          //ro2
+                          pl = strtok(NULL,"r, ");
+                          reg2 = (int) strtol(pl, NULL, 16);
+
+                          criar_palavra(mnemonico,reg1,reg2,0);
+
+                      } else if(strcmp(pl, "not") == 0)
+                      {
+                          //Mnemônico
+                          strcpy(mnemonico,pl);
+                          //ro1
+                          pl = strtok(NULL,"r, ");
+                          reg1 = (int) strtol(pl, NULL, 16);
+                          criar_palavra(mnemonico,reg1,0x0,0x0);
+                      } else if(strcmp(pl, "je") == 0 || strcmp(pl, "jne") == 0 ||
+                                strcmp(pl, "jl") == 0 || strcmp(pl, "jle") == 0 ||
+                                strcmp(pl, "jg") == 0 || strcmp(pl, "jge") == 0 ||
+                                strcmp(pl, "jmp") == 0)
+                      {
+                          //Mnemônico
+                          strcpy(mnemonico,pl);
+
+                          pl = strtok(NULL,", ");
+
+                          //memoria
+                          menOuImm = (int) strtol(pl, NULL, 16);
+                          criar_palavra(mnemonico,0x00,0x00,menOuImm);
+                      } else if(strcmp(pl, "ld") == 0 || strcmp(pl,"st") == 0)
+                      {
+                          //Mnemônico
+                          strcpy(mnemonico,pl);
+
+
+                          pl = strtok(NULL, "r, ");
+
+                          //reg1
+
+                          reg1 = (int) strtol(pl,NULL,16);
+
+
+                          //memória
+                          pl = strtok(NULL, ", ");
+                          menOuImm = (int) strtol(pl, NULL, 16);
+
+                          criar_palavra(mnemonico,reg1,0x00,menOuImm);
+
+                      }else if(strcmp(pl, "addi") == 0 || strcmp(pl, "subi") == 0 ||
+                                strcmp(pl, "muli") == 0 || strcmp(pl, "divi") == 0 ||
+                                strcmp(pl, "movi") == 0 ||strcmp(pl, "lsh") == 0 ||
+                                strcmp(pl, "rsh") == 0)
+                      {
+                          //Mnemônico
+                          strcpy(mnemonico, pl);
+
+                          //reg1
+                          pl = strtok(NULL,"r, ");
+                          reg1 = (int) strtol(pl, NULL, 16);
+
+                          //imm
+                          pl = strtok(NULL,"r, ");
+                          menOuImm = (int) strtol(pl,NULL,16);
+
+                          criar_palavra(mnemonico,reg1,0x00,menOuImm);
+                      }else if(strcmp(pl, "nop") == 0 || strcmp(pl, "hlt") == 0)
+                      {
+                          strcpy(mnemonico,pl);
+                          criar_palavra(mnemonico,0x00,0x00,0x00);
+                      }
                    } else{
                        palavra = (int) strtol(pl,NULL,16);
-                       printf("%d --- %x\n",palavra,palavra);
+
                    }
+
+                   //adicionar palavra
+                   memoria[menOuImm++] = palavra >> 24;
+                   memoria[menOuImm++] = (palavra & 0x00ff0000) >> 16;
+                   memoria[menOuImm++] = (palavra & 0x0000ff00) >> 16;
+                   memoria[menOuImm] = palavra & 0x000000ff;
                }
                pl = strtok(NULL,";");
                count++;
@@ -360,34 +440,6 @@ void lerTexto()
         }
     }
     fclose(arq);
-}
-
-int criar_palavra(unsigned int palavra, unsigned char opcode, unsigned int reg1, unsigned int reg2, unsigned int menOuImm)
-{
-    int novaPalavra;
-
-    if(ir >= 0x2 && ir <= 0xA)
-    {
-        //ADD,SUB,MUL,DIV,CMP,AND,OR,XOR
-
-    } else if(ir == 0xB)
-    {
-        //NOT
-
-    } else if(ir >=0xC && ir <= 0x12)
-    {
-        //JE, JE JL JLE JG JGE JMP
-
-    } else if(ir >= 0x13 && ir <= 0x14)
-    {
-        //LD, ST
-    } else if(ir >= 0x15 && ir <= 0x1B)
-    {
-        //MOVI
-
-    }
-
-    return palavra;
 }
 
 int main() {

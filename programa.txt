@@ -1,4 +1,4 @@
-0;i;nop r0, 92
+0;i;hlt r7, 22
 4;i;ld r1, 96
 8;i;sub r0, r1
 c;i;ld r1, 8e
