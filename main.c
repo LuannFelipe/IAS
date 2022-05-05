@@ -72,9 +72,6 @@ void decodifica()
 
        mar = mbr & 0x001fffff;
 
-
-
-
    } else if(ir >= 0x15 && ir <= 0x1B)
    {
        //MOVI
@@ -170,6 +167,8 @@ void executa()
             if(e == 1)
             {
                 pc = mar;
+            } else{
+                pc+=4;
             }
             break;
         case 0x0D:
@@ -177,6 +176,8 @@ void executa()
             if(e == 0)
             {
                 pc = mar;
+            }else{
+                pc+=4;
             }
             break;
         case 0x0E:
@@ -184,6 +185,8 @@ void executa()
             if(l == 1)
             {
                 pc = mar;
+            }else{
+                pc+=4;
             }
             break;
         case 0x0F:
@@ -191,6 +194,8 @@ void executa()
             if(l == 1 || e == 1)
             {
                 pc = mar;
+            }else{
+                pc+=4;
             }
             break;
         case 0x10:
@@ -198,6 +203,8 @@ void executa()
             if(g == 1)
             {
                 pc = mar;
+            }else{
+                pc+=4;
             }
             break;
         case 0x11:
@@ -205,6 +212,8 @@ void executa()
             if(g == 1 || e == 1)
             {
                 pc = mar;
+            }else{
+                pc+=4;
             }
             break;
         case 0x12:
@@ -213,39 +222,39 @@ void executa()
             break;
         case 0x13:
             //ld
-            reg[ro0] = memoria[mar++];
+            mbr = memoria[mar++];
             for(int i = 1; i < 4; i++)
             {
-                reg[ro0] = reg[ro0] << 8;
-                reg[ro0] = reg[ro0] | memoria[mar++];
+                mbr = mbr << 8;
+                mbr = mbr | memoria[mar++];
             }
-
+            reg[ro0] = mbr;
             pc += 4;
             break;
         case 0x14:
             //st
             //aaaa bbbb cccc dddd eeee ffff gggg hhhh
-            //memoria[x++] = aaaa bbbb
-            //memoria[x++] = cccc dddd
-            //memoria[x++] = eeee ffff
-            //memoria[x] = gggg
-
-            memoria[mar++] = reg[ro0] >> 24;
+            //memoria[novaPalvra++] = aaaa bbbb
+            //memoria[novaPalvra++] = cccc dddd
+            //memoria[novaPalvra++] = eeee ffff
+            //memoria[novaPalvra] = gggg
+            mbr = reg[ro0];
+            memoria[mar++] = mbr >> 24;
 
             //xxxx xxxx yyyy yyyy xxxx xxxx xxxx xxxx
             //0000 0000 1111 1111 0000 0000 0000 0000
             //   0    0    f    f    0    0     0   0
-            memoria[mar++] = (reg[ro0] & 0x00ff0000) >> 16;
+            memoria[mar++] = (mbr & 0x00ff0000) >> 16;
 
             //xxxx xxxx xxxx xxxx yyyy yyyy xxxx xxxx
             //0000 0000 0000 0000 1111 1111 0000 0000
             //   0    0    0    0    f    f     0   0
-            memoria[mar++] = (reg[ro0] & 0x0000ff00) >> 16;
+            memoria[mar++] = (mbr & 0x0000ff00) >> 16;
 
             //xxxx xxxx xxxx xxxx xxxx xxxx yyyy yyyy
             //0000 0000 0000 0000 0000 0000 1111 1111
             //   0    0    0    0    f    f     0   0
-            memoria[mar] = reg[ro0] & 0x000000ff;
+            memoria[mar] = mbr & 0x000000ff;
 
             pc += 4;
 
@@ -287,21 +296,140 @@ void executa()
             break;
         case 0x1B:
             //rsh
-            reg[ro0] = reg[ro0] << imm;
+            reg[ro0] = reg[ro0] >> imm;
             pc += 4;
             break;
     }
 }
 
 
-int criar_palavra(char mnemonico[], unsigned int reg1, unsigned int reg2, unsigned int menOuImm)
+int criar_palavra(char mnemonico[], unsigned int reg1, unsigned int reg2, unsigned int menOuImm, int inicio)
 {
     int novaPalavra;
 
+    if(strcmp(mnemonico,"ld")== 0){
+        novaPalavra = 0x13;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"st")== 0){
+        novaPalavra = 0x14;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"add")== 0){
+        novaPalavra = 0x02;
+        novaPalavra = (novaPalavra << 3) |reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra =  novaPalavra << 18;
+    }else if(strcmp(mnemonico,"sub")== 0) {
+        novaPalavra = 0x03;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra = novaPalavra << 18;
+    }else if(strcmp(mnemonico,"mul")== 0) {
+        novaPalavra = 0x04;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra = novaPalavra << 18;
+    }else if(strcmp(mnemonico,"div")== 0) {
+        novaPalavra = 0x05;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra = novaPalavra << 18;
+    }else if(strcmp(mnemonico,"cmp")== 0) {
+        novaPalavra = 0x06;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra = novaPalavra << 18;
+    }else if(strcmp(mnemonico,"movr")== 0) {
+        novaPalavra = 0x07;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra = novaPalavra << 18;
+    }
+    else if(strcmp(mnemonico,"and")== 0) {
+        novaPalavra = 0x08;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra = novaPalavra << 18;
+    }else if(strcmp(mnemonico,"or")== 0) {
+        novaPalavra = 0x09;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 3) | reg2;
+        novaPalavra = novaPalavra << 18;
+    }else if(strcmp(mnemonico,"xor")== 0) {
+        novaPalavra = 0x0A;
+        novaPalavra = (novaPalavra << 3) | ro0;
+        novaPalavra = (novaPalavra << 3) | novaPalavra;
+        novaPalavra = novaPalavra << 18;
+    }else if(strcmp(mnemonico,"not")== 0) {
+        novaPalavra = 0x0B;
+        novaPalavra = (novaPalavra << 3)|ro0;
+        novaPalavra = novaPalavra << 21;
+    }else if(strcmp(mnemonico,"je")== 0) {
+        novaPalavra = 0x0C;
+        novaPalavra = (novaPalavra << 24) | menOuImm;
+    }else if(strcmp(mnemonico,"jne")== 0) {
+        novaPalavra = 0x0D;
+        novaPalavra = (novaPalavra << 24)| menOuImm;
+    }else if(strcmp(mnemonico,"jl")== 0) {
+        novaPalavra = 0x0E;
+        novaPalavra = (novaPalavra << 24)| menOuImm;
+    }else if(strcmp(mnemonico,"jg")== 0) {
+        novaPalavra = 0x0F;
+        novaPalavra = (novaPalavra << 24)| menOuImm;
+    }else if(strcmp(mnemonico,"jle")== 0) {
+        novaPalavra = 0x10;
+        novaPalavra = (novaPalavra << 24)| menOuImm;
+    }else if(strcmp(mnemonico,"jge")== 0) {
+        novaPalavra = 0x11;
+        novaPalavra = (novaPalavra << 24)| menOuImm;
+    }else if(strcmp(mnemonico,"jmp")== 0) {
+        novaPalavra = 0x12;
+        novaPalavra = (novaPalavra << 24)| menOuImm;
+    }else if(strcmp(mnemonico,"movi")== 0) {
+        novaPalavra = 0x15;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"addi")== 0) {
+        novaPalavra = 0x16;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"subi")== 0) {
+        novaPalavra = 0x17;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"muli")== 0) {
+        novaPalavra = 0x18;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"divi")== 0) {
+        novaPalavra = 0x19;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"lsh")== 0) {
+        novaPalavra = 0x1A;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"rsh")== 0) {
+        novaPalavra = 0x1B;
+        novaPalavra = (novaPalavra << 3) | reg1;
+        novaPalavra = (novaPalavra << 21) | menOuImm;
+    }else if(strcmp(mnemonico,"nop")== 0) {
+        novaPalavra = 0x01;
+        novaPalavra = novaPalavra << 24;
+    }else{
+        novaPalavra  = 0;
+    }
 
+    printf("%x\n", novaPalavra);
+    memoria[inicio++] = novaPalavra >> 24;
+    memoria[inicio++] = (novaPalavra & 0x00ff0000) >> 16;
+    memoria[inicio++] = (novaPalavra & 0x0000ff00) >> 16;
+    memoria[inicio] = novaPalavra & 0x000000ff;
 
     return novaPalavra;
 }
+
 
 void lerTexto()
 {
@@ -314,7 +442,6 @@ void lerTexto()
     int inicio;
     char tipo;
     unsigned int palavra;
-    unsigned char opcode;
     unsigned int reg1;
     unsigned int reg2;
     unsigned int menOuImm;
@@ -323,9 +450,7 @@ void lerTexto()
 
     if (NULL == arq) {
         printf("Arquivo programa.txt nao encontrado \n");
-        exit(1);
     } else{
-
        while (fgets(str, 50, arq) != NULL) {
            pl = strtok(str, ";");
            while(count < 3)
@@ -344,7 +469,7 @@ void lerTexto()
                        pl = strtok(pl,", ");
                       if(strcmp(pl, "add") == 0 || strcmp(pl, "sub") == 0 ||
                             strcmp(pl, "mul") == 0 || strcmp(pl, "div") == 0 ||
-                            strcmp(pl, "cmp") == 0 || strcmp(pl, "movrr") == 0 ||
+                            strcmp(pl, "cmp") == 0 || strcmp(pl, "movr") == 0 ||
                             strcmp(pl, "and") == 0 || strcmp(pl, "or") == 0 ||
                             strcmp(pl, "xor") == 0)
                       {
@@ -357,7 +482,7 @@ void lerTexto()
                           pl = strtok(NULL,"r, ");
                           reg2 = (int) strtol(pl, NULL, 16);
 
-                          criar_palavra(mnemonico,reg1,reg2,0);
+                          criar_palavra(mnemonico,reg1,reg2,0,inicio);
 
                       } else if(strcmp(pl, "not") == 0)
                       {
@@ -366,7 +491,7 @@ void lerTexto()
                           //ro1
                           pl = strtok(NULL,"r, ");
                           reg1 = (int) strtol(pl, NULL, 16);
-                          criar_palavra(mnemonico,reg1,0x0,0x0);
+                          criar_palavra(mnemonico,reg1,0x0,0x0,inicio);
                       } else if(strcmp(pl, "je") == 0 || strcmp(pl, "jne") == 0 ||
                                 strcmp(pl, "jl") == 0 || strcmp(pl, "jle") == 0 ||
                                 strcmp(pl, "jg") == 0 || strcmp(pl, "jge") == 0 ||
@@ -379,7 +504,7 @@ void lerTexto()
 
                           //memoria
                           menOuImm = (int) strtol(pl, NULL, 16);
-                          criar_palavra(mnemonico,0x00,0x00,menOuImm);
+                         palavra = criar_palavra(mnemonico,0x00,0x00,menOuImm,inicio);
                       } else if(strcmp(pl, "ld") == 0 || strcmp(pl,"st") == 0)
                       {
                           //Mnemônico
@@ -397,7 +522,7 @@ void lerTexto()
                           pl = strtok(NULL, ", ");
                           menOuImm = (int) strtol(pl, NULL, 16);
 
-                          criar_palavra(mnemonico,reg1,0x00,menOuImm);
+                         palavra = criar_palavra(mnemonico,reg1,0x00,menOuImm,inicio);
 
                       }else if(strcmp(pl, "addi") == 0 || strcmp(pl, "subi") == 0 ||
                                 strcmp(pl, "muli") == 0 || strcmp(pl, "divi") == 0 ||
@@ -415,28 +540,28 @@ void lerTexto()
                           pl = strtok(NULL,"r, ");
                           menOuImm = (int) strtol(pl,NULL,16);
 
-                          criar_palavra(mnemonico,reg1,0x00,menOuImm);
+                          palavra = criar_palavra(mnemonico,reg1,0x00,menOuImm,inicio);
                       }else if(strcmp(pl, "nop") == 0 || strcmp(pl, "hlt") == 0)
                       {
                           strcpy(mnemonico,pl);
-                          criar_palavra(mnemonico,0x00,0x00,0x00);
+                          palavra = criar_palavra(mnemonico,0x00,0x00,0x00,inicio);
                       }
                    } else{
                        palavra = (int) strtol(pl,NULL,16);
-
+                       memoria[inicio++] = palavra >> 24;
+                       memoria[inicio++] = (palavra & 0x00ff0000) >> 16;
+                       memoria[inicio++] = (palavra & 0x0000ff00) >> 16;
+                       memoria[inicio] = palavra & 0x000000ff;
                    }
-
                    //adicionar palavra
-                   memoria[menOuImm++] = palavra >> 24;
-                   memoria[menOuImm++] = (palavra & 0x00ff0000) >> 16;
-                   memoria[menOuImm++] = (palavra & 0x0000ff00) >> 16;
-                   memoria[menOuImm] = palavra & 0x000000ff;
+
                }
+
                pl = strtok(NULL,";");
+
                count++;
            }
            count = 0;
-           printf("\n");
         }
     }
     fclose(arq);
@@ -444,69 +569,19 @@ void lerTexto()
 
 int main() {
 
-  //  lerTexto();
-//
-//  pc = 0;
-//  memoria[0] = 0x13;
-//  memoria[1] = 0x00;
-//  memoria[2] = 0x00;
-//  memoria[3] = 0x10;
-//
-//  memoria[4] = 0x13;
-//  memoria[5] = 0x20;
-//  memoria[6] = 0x00;
-//  memoria[7] = 0x14;
-//
-//  memoria[0x08] = 0x16;
-//  memoria[0x09] = 0x00;
-//  memoria[0x0a] = 0x00;
-//  memoria[0x0b] = 0x14;
-//
-//  memoria[0x0c] = 0x00;
-//  memoria[0x0d] = 0x00;
-//  memoria[0x0e] = 0x00;
-//  memoria[0x0f] = 0x00;
-//
-//  memoria[0x10] = 0x00;
-//  memoria[0x11] = 0x00;
-//  memoria[0x12] = 0x00;
-//  memoria[0x13] = 0x0f;
-//
-//  memoria[0x14] = 0x00;
-//  memoria[0x15] = 0x00;
-//  memoria[0x16] = 0x00;
-//  memoria[0x17] = 0x08;
-//
-//  busca();
-//  decodifica();
-//  while(ir != 0x00)
-//  {
-//
-//      executa();
-//      printf("mbr -- %x\n", mbr);
-//      printf("mar -- %x\n", mar);
-//      printf("ir -- %x\n", ir);
-//      printf("ro0 -- %x\n", ro0);
-//      printf("ro1 -- %x\n", ro1);
-//      printf("imm -- %x\n", imm);
-//      printf("pc -- %x\n", pc);
-//      printf("e -- %x\n", e);
-//      printf("l -- %x\n", l);
-//      printf("g -- %x\n", g);
-//      printf("r0 -- %x\n", reg[0]);
-//      printf("r1 -- %x\n", reg[1]);
-//      printf("r2 -- %x\n", reg[2]);
-//      printf("r3 -- %x\n", reg[3]);
-//      printf("r4 -- %x\n", reg[4]);
-//      printf("r5 -- %x\n", reg[5]);
-//      printf("r6 -- %x\n", reg[6]);
-//      printf("r7 -- %x\n", reg[7]);
-//      printf("------------------------\n");
-//      busca();
-//      decodifica();
-//  }
+  lerTexto();
+  pc = 0;
 
-    lerTexto();
+  busca();
+  decodifica();
+  while(ir != 0x00)
+  {
+      executa();
+      busca();
+      decodifica();
+  }
+
+    printf("%x",memoria[0x7d]);
     return 0;
 }
 
